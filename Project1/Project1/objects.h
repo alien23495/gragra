@@ -1,5 +1,5 @@
 //objec IDS
-enum IDS{PLAYER,BULLET,ENEMY};
+enum IDS { PLAYER, BULLET, ENEMY };
 
 // nasz statek
 struct SpaceShip

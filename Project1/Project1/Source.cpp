@@ -9,7 +9,7 @@ const int HEIGHT = 600;
 const int NUM_BULLETS = 5;
 const int NUM_COMETS = 10;
 
-enum KEYS{UP,DOWN,LEFT,RIGHT,SPACE};
+enum KEYS { UP, DOWN, LEFT, RIGHT, SPACE };
 bool keys[5] = { false,false,false,false,false };
 
 
@@ -25,14 +25,11 @@ void InitBullet(Bullet bullet[], int size);
 void DrawBullet(Bullet bullet[], int size);
 void FireBullet(Bullet bullet[], int size, SpaceShip &statek);
 void UpdateBullet(Bullet bullet[], int size);
-void CollideBulet(Bullet bullet[], int Bsize, Comet comets[], int cSize);
-
 
 void InitComet(Comet comets[], int size);
 void DrawComet(Comet comets[], int size);
 void StartComet(Comet comets[], int size);
 void UpdateComet(Comet comets[], int size);
-void CollideComet(Comet comets[], int cSize, SpaceShip &statek);
 int main(void)
 {
 	//prymitywne zmienne;
@@ -47,7 +44,7 @@ int main(void)
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
-	
+
 	//inicjalizacja funkcji
 	al_init();
 	al_init_image_addon();
@@ -92,8 +89,6 @@ int main(void)
 			UpdateBullet(bullets, NUM_BULLETS);
 			StartComet(comets, NUM_COMETS);
 			UpdateComet(comets, NUM_COMETS);
-			CollideBulet(bullets, NUM_BULLETS, comets, NUM_COMETS);
-			CollideComet(comets, NUM_COMETS, statek);
 		}
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
@@ -103,42 +98,42 @@ int main(void)
 		{
 			switch (ev.keyboard.keycode)
 			{
-				case ALLEGRO_KEY_ESCAPE:
-				{
-					done = true;
-					break;
-				}
+			case ALLEGRO_KEY_ESCAPE:
+			{
+				done = true;
+				break;
+			}
 
-				case ALLEGRO_KEY_UP:
-				{
-					keys[UP] = true;
-					break;
-				}
+			case ALLEGRO_KEY_UP:
+			{
+				keys[UP] = true;
+				break;
+			}
 
-				case ALLEGRO_KEY_DOWN:
-				{
-					keys[DOWN] = true;
-					break;
-				}
+			case ALLEGRO_KEY_DOWN:
+			{
+				keys[DOWN] = true;
+				break;
+			}
 
-				case ALLEGRO_KEY_LEFT:
-				{
-					keys[LEFT] = true;
-					break;
-				}
+			case ALLEGRO_KEY_LEFT:
+			{
+				keys[LEFT] = true;
+				break;
+			}
 
-				case ALLEGRO_KEY_RIGHT:
-				{
-					keys[RIGHT] = true;
-					break;
-				}
+			case ALLEGRO_KEY_RIGHT:
+			{
+				keys[RIGHT] = true;
+				break;
+			}
 
-				case ALLEGRO_KEY_SPACE:
-				{
-					keys[SPACE] = true;
-					FireBullet(bullets, NUM_BULLETS, statek);
-					break;
-				}
+			case ALLEGRO_KEY_SPACE:
+			{
+				keys[SPACE] = true;
+				FireBullet(bullets, NUM_BULLETS, statek);
+				break;
+			}
 
 			}
 		}
@@ -185,19 +180,19 @@ int main(void)
 			}
 		}
 
-		
+
 		if (redraw&& al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
 			DrawShip(statek);
-			
+
 			DrawComet(comets, NUM_COMETS);;
 			al_flip_display();
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 			al_draw_bitmap(dup, 0, 0, 0);
 			DrawBullet(bullets, NUM_BULLETS);;
 		}
-		
+
 	}
 	//al_draw_bitmap(dup, 50, 50, 0);
 	al_destroy_display(display);   //usuwa okienko
@@ -220,7 +215,7 @@ void InitShip(SpaceShip &statek)
 void DrawShip(SpaceShip &statek)
 {
 	al_draw_filled_triangle(statek.x - 12, statek.y - 17, statek.x + 12, statek.y, statek.x - 12, statek.y + 17, al_map_rgb(0, 255, 0));
-	
+
 }
 
 void MoveShipUp(SpaceShip &statek)
@@ -243,6 +238,7 @@ void MoveShipRight(SpaceShip &statek)
 	statek.x += statek.speed;
 	if (statek.x > 300)	statek.x = 300;
 }
+
 
 void InitBullet(Bullet bullet[], int size)
 {
@@ -283,30 +279,6 @@ void UpdateBullet(Bullet bullet[], int size)
 			bullet[i].x += bullet[i].speed;
 			if (bullet[i].x > WIDTH)
 				bullet[i].live = false;
-		}
-	}
-}
-void CollideBulet(Bullet bullet[], int bSize, Comet comets[], int cSize)
-{
-	for (int i = 0; i < bSize; i++)
-	{
-		if (bullet[i].live)
-		{
-			for (int j = 0; j < cSize; j++)
-			{
-				if (comets[j].live)
-				{
-					if (bullet[i].x > (comets[j].x - comets[j].boundx) &&
-						bullet[i].x < (comets[j].x + comets[j].boundx) &&
-						bullet[i].y>(comets[j].y - comets[j].boundy) &&
-						bullet[i].y < (comets[j].y + comets[j].boundy))
-
-					{
-						bullet[i].live = false;
-						comets[j].live = false;
-					}
-				}
-			}
 		}
 	}
 }
@@ -357,28 +329,6 @@ void UpdateComet(Comet comets[], int size)
 		{
 			comets[i].x -= comets[i].speed;
 			if (comets[i].x < 0) comets[i].live = false;
-		}
-	}
-}
-void CollideComet(Comet comets[], int cSize, SpaceShip &statek)
-{
-	for (int i = 0; i < cSize; i++)
-	{
-		if (comets[i].live)
-		{
-			if (comets[i].x - comets[i].boundx < statek.x + statek.boundx &&
-				comets[i].x + comets[i].boundx > statek.x - statek.boundx &&
-				comets[i].y - comets[i].boundy < statek.y + statek.boundy &&
-				comets[i].y + comets[i].boundy > statek.y + statek.boundy)
-			{
-				statek.lives--;
-				comets[i].live = false;
-			}
-			else if (comets[i].x < 0) comets[i].live = false;
-			{
-				statek.lives--;
-				comets[i].live = false;
-			}
 		}
 	}
 }
