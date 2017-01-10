@@ -25,11 +25,17 @@ void InitBullet(Bullet bullet[], int size);
 void DrawBullet(Bullet bullet[], int size);
 void FireBullet(Bullet bullet[], int size, SpaceShip &statek);
 void UpdateBullet(Bullet bullet[], int size);
+void CollideBulet(Bullet bullet[], int Bsize, Comet comets[], int cSize);
+
+
 
 void InitComet(Comet comets[], int size);
 void DrawComet(Comet comets[], int size);
 void StartComet(Comet comets[], int size);
 void UpdateComet(Comet comets[], int size);
+void CollideComet(Comet comets[], int cSize, SpaceShip &statek);
+
+
 int main(void)
 {
 	//prymitywne zmienne;
@@ -89,6 +95,9 @@ int main(void)
 			UpdateBullet(bullets, NUM_BULLETS);
 			StartComet(comets, NUM_COMETS);
 			UpdateComet(comets, NUM_COMETS);
+			CollideBulet(bullets, NUM_BULLETS, comets, NUM_COMETS);
+			CollideComet(comets, NUM_COMETS, statek);
+
 		}
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
@@ -283,6 +292,33 @@ void UpdateBullet(Bullet bullet[], int size)
 	}
 }
 
+void CollideBulet(Bullet bullet[], int bSize, Comet comets[], int cSize)
+{
+	for (int i = 0; i < bSize; i++)
+	{
+		if (bullet[i].live)
+		{
+			for (int j = 0; j < cSize; j++)
+			{
+				if (comets[j].live)
+				{
+					if (bullet[i].x >(comets[j].x - comets[j].boundx) &&
+						bullet[i].x < (comets[j].x + comets[j].boundx) &&
+						bullet[i].y>(comets[j].y - comets[j].boundy) &&
+						bullet[i].y < (comets[j].y + comets[j].boundy))
+
+					{
+						bullet[i].live = false;
+						comets[j].live = false;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
 void InitComet(Comet comets[], int size)
 {
 	for (int i = 0; i < size; i++)
@@ -328,7 +364,29 @@ void UpdateComet(Comet comets[], int size)
 		if (comets[i].live)
 		{
 			comets[i].x -= comets[i].speed;
-			if (comets[i].x < 0) comets[i].live = false;
+			//if (comets[i].x < 0) comets[i].live = false;
+		}
+	}
+}
+void CollideComet(Comet comets[], int cSize, SpaceShip &statek)
+{
+	for (int i = 0; i < cSize; i++)
+	{
+		if (comets[i].live)
+		{
+			if (comets[i].x - comets[i].boundx < statek.x + statek.boundx &&
+				comets[i].x + comets[i].boundx > statek.x - statek.boundx &&
+				comets[i].y - comets[i].boundy < statek.y + statek.boundy &&
+				comets[i].y + comets[i].boundy > statek.y + statek.boundy)
+			{
+				statek.lives--;
+				comets[i].live = false;
+			}
+			else if (comets[i].x < 0)
+			{
+				statek.lives--;
+				comets[i].live = false;
+			}
 		}
 	}
 }
