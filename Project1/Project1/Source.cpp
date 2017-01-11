@@ -1,6 +1,8 @@
 #include <allegro5\allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5\allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include "objects.h"
 
 //GLOBALNE
@@ -25,7 +27,7 @@ void InitBullet(Bullet bullet[], int size);
 void DrawBullet(Bullet bullet[], int size);
 void FireBullet(Bullet bullet[], int size, SpaceShip &statek);
 void UpdateBullet(Bullet bullet[], int size);
-void CollideBulet(Bullet bullet[], int Bsize, Comet comets[], int cSize);
+void CollideBulet(Bullet bullet[], int Bsize, Comet comets[], int cSize, SpaceShip &statek);
 
 
 
@@ -42,6 +44,7 @@ int main(void)
 	bool done = false;
 	bool redraw = true;
 	const int FPS = 60;
+	bool isGameOver = false;
 	//zmienne obiektowe
 	SpaceShip statek;
 	Bullet bullets[NUM_BULLETS];
@@ -50,6 +53,7 @@ int main(void)
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
+	ALLEGRO_FONT *font18 = NULL;
 
 	//inicjalizacja funkcji
 	al_init();
@@ -67,13 +71,17 @@ int main(void)
 
 	al_init_primitives_addon();
 	al_install_keyboard();
-
+	al_init_font_addon();
+	al_init_ttf_addon();
 	event_queue = al_create_event_queue();
 	timer = al_create_timer(1.0 / FPS);
 	InitShip(statek);
 	InitBullet(bullets, NUM_BULLETS);
 	InitComet(comets, NUM_COMETS);
 	srand(time(NULL));
+
+	font18 = al_load_font("arial.ttf", 18, 0);
+
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -92,12 +100,18 @@ int main(void)
 			if (keys[DOWN]) MoveShipDown(statek);
 			if (keys[LEFT]) MoveShipLeft(statek);
 			if (keys[RIGHT]) MoveShipRight(statek);
-			UpdateBullet(bullets, NUM_BULLETS);
-			StartComet(comets, NUM_COMETS);
-			UpdateComet(comets, NUM_COMETS);
-			CollideBulet(bullets, NUM_BULLETS, comets, NUM_COMETS);
-			CollideComet(comets, NUM_COMETS, statek);
 
+			if (!isGameOver)
+			{
+				UpdateBullet(bullets, NUM_BULLETS);
+				StartComet(comets, NUM_COMETS);
+				UpdateComet(comets, NUM_COMETS);
+				CollideBulet(bullets, NUM_BULLETS, comets, NUM_COMETS, statek);
+				CollideComet(comets, NUM_COMETS, statek);
+
+				if (statek.lives <= 0)
+					isGameOver = true;
+			}
 		}
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
@@ -193,13 +207,25 @@ int main(void)
 		if (redraw&& al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
-			DrawShip(statek);
 
-			DrawComet(comets, NUM_COMETS);;
-			al_flip_display();
-			al_clear_to_color(al_map_rgb(0, 0, 0));
-			al_draw_bitmap(dup, 0, 0, 0);
-			DrawBullet(bullets, NUM_BULLETS);;
+			if (!isGameOver)
+			{
+				DrawShip(statek);
+
+				DrawComet(comets, NUM_COMETS);;
+				al_flip_display();
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_bitmap(dup, 0, 0, 0);
+				DrawBullet(bullets, NUM_BULLETS);;
+				al_draw_textf(font18, al_map_rgb(255, 0, 0), 5, 5, 0, "Lives:%i     Score:%i", statek.lives, statek.score);
+			}
+			else
+			{
+				al_flip_display();
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_bitmap(dup, 0, 0, 0);
+				al_draw_textf(font18, al_map_rgb(0, 255, 0), WIDTH / 2, HEIGHT / 2, ALLEGRO_ALIGN_CENTRE, "GAME OVER SCORE: %i", statek.score);
+			}
 		}
 
 	}
@@ -220,6 +246,7 @@ void InitShip(SpaceShip &statek)
 	statek.speed = 7;
 	statek.boundx = 6;
 	statek.boundy = 7;
+	statek.score = 0;
 }
 void DrawShip(SpaceShip &statek)
 {
@@ -292,7 +319,7 @@ void UpdateBullet(Bullet bullet[], int size)
 	}
 }
 
-void CollideBulet(Bullet bullet[], int bSize, Comet comets[], int cSize)
+void CollideBulet(Bullet bullet[], int bSize, Comet comets[], int cSize, SpaceShip &statek)
 {
 	for (int i = 0; i < bSize; i++)
 	{
@@ -310,6 +337,7 @@ void CollideBulet(Bullet bullet[], int bSize, Comet comets[], int cSize)
 					{
 						bullet[i].live = false;
 						comets[j].live = false;
+						statek.score++;
 					}
 				}
 			}
